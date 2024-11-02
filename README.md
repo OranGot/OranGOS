@@ -8,9 +8,12 @@ The os is largely incomplete with a lot of "disconnected" files and empty direct
     PIC(doesn't handle all the interrupts but works)
     PS2 keyboard driver(not fully complete but works)
     Memory detection
+    Memory management(really bad)
 ## WIP
-    FAT32
-    Memory management
+    AHCI
+    ACPI
+    Disk reading 
+    FAT32    
 ## Plans
 I want the kernel to be monolithic and unix like  
 Integrate more zig.  

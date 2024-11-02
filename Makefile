@@ -37,9 +37,10 @@ build:
 	cp grub.cfg isodir/boot/grub/grub.cfg
 	grub-mkrescue -o myos.iso isodir 
 clean:
-	sudo umount /mnt
+	-sudo umount /mnt || true
 	-sudo losetup -d /dev/loop1 || true
 	-sudo losetup -d /dev/loop2 || true
+	rm -f disk.img
 	rm -f myos.iso
 	rm -f isodir/boot/myos.bin
 	rm -f myos.bin

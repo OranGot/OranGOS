@@ -4,13 +4,7 @@
 #include "../util/printf.h"
 #include <stdint.h>
 __attribute__((cdecl)) void exception_handler(IDT_push_reg *err) {
-  // dbg_printf(
-  //     "EXCEPTION!!!\nError code: %08x, Code seg: %u,Data seg: %u\nEAX: "
-  //     "%u, EBP: %u, EBX: %u, ECX: %u\nEDI: %u, EDX: %u, eflags: %u, EIP: "
-  //     "%u\nESI: %u\nESP: %u\ninterrupt num: %u\nstack segment: %u\n",
-  //     err->error_code, err->code_seg, err->data_seg, err->eax, err->ebp,
-  //     err->ebx, err->ecx, err->edi, err->edx, err->eflags, err->eip, err->esi,
-  //     err->esp, err->interrupt_num, err->stack_seg);
+  clear_screen();
   printf("EXCEPTION!!!\nError code: %08x, Code seg: %u,Data seg: %u\nEAX: "
          "%u, EBP: %u, EBX: %u, ECX: %u\nEDI: %u, EDX: %u, eflags: %u, EIP: "
          "%u\nESI: %u\nESP: %u\ninterrupt num: %u\nstack segment: %u\n",
@@ -46,7 +40,7 @@ __attribute__((cdecl)) void exception_handler(IDT_push_reg *err) {
     dbg_printf("Double fault, good luck\n");
     break;
   case 9:
-    dbg_printf("HOW????\n");
+    dbg_printf("some FPU fault can't happen\n");
     break;
   case 10:
     dbg_printf("Invalid tss occured\n");

@@ -1,0 +1,3 @@
+Welcome.
+If you see this file while running my os I've succeeded.
+ 

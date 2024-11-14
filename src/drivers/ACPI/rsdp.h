@@ -5,7 +5,7 @@ typedef struct {
   char OEMID[6];
   uint8_t Revision;
   uint32_t RsdtAddress;
-} RSDP __attribute__((packed));
+}__attribute__((packed)) RSDP ;
 #define RSDP_SIGNATURE "RSD PTR "
 RSDP locate_rsdp(void);
 typedef struct {
@@ -14,7 +14,7 @@ typedef struct {
   char OEMID[6];
   uint8_t Revision;
   uint32_t RsdtAddress;
-} RSDPv1 __attribute__((packed));
+}__attribute__((packed)) RSDPv1 ;
 union RSDP_t {
   RSDPv1 v1;
   RSDP v2;

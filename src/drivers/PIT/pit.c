@@ -8,5 +8,6 @@ void PIT_handle_pit(void) {}
 #define PIT_DEFAULT_ACCESS_MODE
 #define PIT_DEFAULT_OPERATING_MODE
 void PIT_set_state(char state) { outb(PIT_MODE_COMMAND, state); }
+//well this doesn't work
+void PIT_disable_pit(void) { outl(PIT_MODE_COMMAND, PIT_LATCH_COMMAND); }
 
-void PIT_disable_pit(void) { outb(PIT_MODE_COMMAND, 0); }

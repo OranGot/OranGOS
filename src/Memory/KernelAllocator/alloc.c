@@ -7,19 +7,16 @@
 #include "../PageTable/pagedir.h"
 #include "../mmap/mmap.h"
 #include <stdint.h>
-// I don't know what write through means so I'll just set it
-#define DEFAULT_USER_FLAGS 0b000001111
-#define DEFAULT_KERNEL_FLAGS 0b100001111
 
+#define CWPAGE_DEFAULT (void*)0xDEADBEEF
 uint8_t cwbitmap[BITMAP_BYTES];
-void *cwpage = NULL;
+void *cwpage = CWPAGE_DEFAULT;
 uint8_t mmap[1024 * 1024];
 uint32_t segjmptable[128];
 // extern struct multiboot_info_t;
 // extern struct multiboot_memory_map_t;
 extern uint32_t kernel_page_directory[1024] __attribute__((aligned(4096)));
 void kernel_allocator_setup(multiboot_info_t *mbd) {
-  uint8_t ctr = 0;
 
   uint32_t i;
   for (i = 0; i < mbd->mmap_length; i += sizeof(multiboot_memory_map_t)) {
@@ -34,29 +31,31 @@ void kernel_allocator_setup(multiboot_info_t *mbd) {
     }
   }
 }
-void kappend_page(uint32_t *pagedir, uint8_t flags) {
-  const void *phyaddr = get_free_page();
+void kappend_page(uint32_t *pagedir, uint16_t flags) {
+    void *phyaddr = kget_free_page();
   bitmap_header default_header;
   default_header.signature = KALLOCATOR_SIGNATURE;
-
-  for (uint16_t i = 0; i < PAGE_TABLE_SIZE; i++) {
-    uint32_t *pagetable = kget_page_table(pagedir, i);
-    if (pagetable[PAGE_TABLE_SIZE - 1] << 31 == 0) { // page not present
-      for (uint16_t o = PAGE_TABLE_SIZE; o > 0; o--) {
-        if (pagetable[o] << 31 != 0) {
-          pagetable[o - 1] = create_page_table_entry((uint32_t)phyaddr, flags);
-          memcpy(phyaddr, &default_header, sizeof(bitmap_header));
+ uint16_t pdi, pti;
+  for (pdi = 0; pdi < PAGE_TABLE_SIZE; pdi++) {
+    uint32_t *pagetable = kget_page_table(pagedir, pdi);
+    if (pagetable[PAGE_TABLE_SIZE - 1] << 31 != 0) { // page table present
+      for (pti = PAGE_TABLE_SIZE; pti > 0; pti--) {
+        if (pagetable[pti] << 31 != 0) {
+          pagetable[pti - 1] = create_page_table_entry((uint32_t)phyaddr, flags);
+          memcpy((void*)phyaddr, &default_header, sizeof(bitmap_header));
+          break;
         }
       }
-      break;
     }
   }
+  cwpage =create_virtual_address(pdi, pti, 0);
+
 }
 uint32_t *kget_page_table(uint32_t *pagedir, uint16_t id) {
-  return (uint32_t *)(pagedir[id] & 0x000);
+  return (uint32_t *)(pagedir[id] & 0xFFFFF000);
 }
 
-uint32_t create_page_table_entry(uint32_t address, uint8_t flags) {
+uint32_t create_page_table_entry(uint32_t address, uint16_t flags) {
   return address << 11 | flags;
 }
 /*
@@ -73,10 +72,10 @@ void *create_virtual_address(uint16_t page_dir_entry, uint16_t page_table_entry,
 int load_page(void *baseaddr) {
   bitmap_header head;
   memcpy(&head, baseaddr, sizeof(bitmap_header));
-  // if (head.signature != KALLOCATOR_SIGNATURE) {
-  //   dbg_printf("INVALID ALLOCATOR SIGNATURE!!!\n");
-  //   return 1;
-  // }
+  if (head.signature != KALLOCATOR_SIGNATURE) {
+    dbg_printf("INVALID ALLOCATOR SIGNATURE!!!\n");
+    return 1;
+  }
   memcpy(cwbitmap, head.bitmap, BITMAP_BYTES);
 
   cwpage = baseaddr;
@@ -84,54 +83,46 @@ int load_page(void *baseaddr) {
 }
 void save_page(void *baseaddr) {}
 void *kalloc(uint32_t size) {
-  if (cwpage == NULL) {
+  if (cwpage == CWPAGE_DEFAULT) {
     dbg_printf("No pages had been allocated yet\n");
     kappend_page(kernel_page_directory, DEFAULT_KERNEL_FLAGS);
   }
   uint16_t bestfit = 0;
   void *bestfitaddr = NULL;
   uint16_t currfit = 0;
-  for (uint16_t bmpe = 0; bmpe < BITMAP_BYTES; bmpe++) {
+  uint32_t curraddr = sizeof(bitmap_header) + (uint32_t)cwpage;
+  uint8_t isfirst_iteration = 0;
+  for (uint16_t bmpe = sizeof(bitmap_header) / 8; bmpe < BITMAP_BYTES; bmpe++) {
     for (uint8_t bit = 0; bit < 8; bit++) {
+        //still in header skip to next iteration
+        if(!isfirst_iteration)bit = sizeof(bitmap_header) % 8;
       if (!get_bit_from_num(cwbitmap[bmpe], bit)) {
         currfit++;
+        curraddr++;
       } else {
         if (currfit - size == 0) {
+            dbg_printf("allocator returning\n");
           return (void *)(bmpe * 8 + bit + sizeof(bitmap_header) + cwpage -
                           currfit);
         } else if (currfit - size > 0 && bestfit < currfit - size) {
+            dbg_printf("allocator bestfitaddr changed");
           bestfitaddr = (void *)(bmpe * 8 + bit + sizeof(bitmap_header) +
                                  cwpage - currfit);
           bestfit = currfit;
         }
       }
     }
-    if (bestfit == 0 && currfit != 0) {
-      dbg_printf("Empty page\n");
-      return cwpage + sizeof(bitmap_header);
-    } else if (bestfit < size && currfit < size) {
-      dbg_printf("Page is full");
-      return NULL;
-    } else if (bestfit > size) {
-      return bestfitaddr;
-    } else {
-      dbg_printf("something weird");
-      return NULL;
-    }
   }
   printf("best fit: %u, current fit: %u, bestfit address %p\n", bestfit,
          currfit, bestfitaddr);
-  if (bestfit == 0 && currfit != 0) {
+  if (bestfit == 0 && currfit == PAGE_SIZE - sizeof(bitmap_header)) {
     dbg_printf("FREE PAGE\n");
-    for (uint32_t i = 0; i < size / 8; i++) {
-    }
-    return cwpage;
+    return cwpage + sizeof(bitmap_header);
   } else if (currfit == 0 && bestfit == 0) {
     dbg_printf("FULL PAGE!!!\n");
     // kappend_page(kernel_page_directory, DEF);
     return NULL;
   } else {
-    printf("ENTRY AT: %p\n", bestfitaddr);
     return bestfitaddr;
   }
 }
@@ -141,6 +132,29 @@ void kfree(void *val, uint32_t size) {
        i < ((uint32_t)val & 0xFFF) - sizeof(bitmap_header) + size; i++) {
     for (uint8_t bit = 0; bit < 8; bit++) {
       cwbitmap[i] = set_bit_of_num(cwbitmap[i], bit, 0);
+    }
+  }
+  return;
+}
+void printmem(multiboot_info_t *mbd) {
+  uint32_t i;
+  for (i = 0; i < mbd->mmap_length; i += sizeof(multiboot_memory_map_t)) {
+    multiboot_memory_map_t *mmmt =
+        (multiboot_memory_map_t *)(mbd->mmap_addr + i);
+    printf("Start Addr: %llu | Length: %llu | Size: %lu | Type: %lu\n",
+           mmmt->addr, mmmt->len, mmmt->size, mmmt->type);
+
+    if (mmmt->type == MULTIBOOT_MEMORY_AVAILABLE) {
+
+      uint64_t kbsize = mmmt->len / 1024;
+      printf("AVAILABLE: %llu\n", kbsize);
+      // plot_pages(mmmt->addr, mmmt->len);
+      /*
+       * Do something with this memory block!
+       * BE WARNED that some of memory shown as availiable is actually
+       * actively being used by the kernel! You'll need to take that
+       * into account before writing to memory!
+       */
     }
   }
 }

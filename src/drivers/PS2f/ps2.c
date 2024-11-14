@@ -497,7 +497,7 @@ int init_ps2(void) {
   inb(PS2_DATA_PORT);
   // step 5
   outb(PS2_COMMAND_PORT, PS2_CCMD_READ_B0_FROM_INTERNAL_RAM);
-  const uint8_t ccb = inb(PS2_DATA_PORT);
+  inb(PS2_DATA_PORT);
   // step 6
   outb(PS2_COMMAND_PORT, 0xAA);
   const uint8_t self_test_result = inb(PS2_DATA_PORT);

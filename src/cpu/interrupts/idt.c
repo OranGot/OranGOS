@@ -1,5 +1,5 @@
-#include "../util/dbg.h"
-#include "int.h"
+#include "../../include/dbg.h"
+#include "../../include/int.h"
 #include <stdbool.h>
 #include <stdint.h>
 

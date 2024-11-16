@@ -1,7 +1,7 @@
-#include "../Memory/KernelAllocator/alloc.h"
-#include "../util/dbg.h"
-#include "../util/printf.h"
-#include "../util/strutil.h"
+#include "../include/alloc.h"
+#include "../include/dbg.h"
+#include "../include/printf.h"
+#include "../include/strutil.h"
 #include <stddef.h>
 int test_allocator() {
   dbg_printf("Running kernel allocator tests\n");

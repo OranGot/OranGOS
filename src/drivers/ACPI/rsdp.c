@@ -1,6 +1,6 @@
-#include "rsdp.h"
-#include "../../util/dbg.h"
-#include "../../util/strutil.h"
+#include "../../include/rsdp.h"
+#include "../../include/dbg.h"
+#include "../../include/strutil.h"
 #include <stdint.h>
 #define SEARCH_MAX 0x000FFFFF
 #define SEARCH_LOW 0x000E0000

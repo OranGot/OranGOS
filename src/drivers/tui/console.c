@@ -1,6 +1,6 @@
-#include "../util/strutil.h"
-#include "commands.h"
-#include "cursor.h"
+#include "../../include/strutil.h"
+#include "../../include/commands.h"
+#include "../../include/cursor.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

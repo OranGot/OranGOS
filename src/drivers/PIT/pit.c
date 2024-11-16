@@ -1,6 +1,6 @@
 #define PIT_MODE_COMMAND 0x43
 #define PIT_CH0_RW 0x40
-#include "../../util/pio.h"
+#include "../../include/pio.h"
 #include <stdint.h>
 #define PIT_LATCH_COMMAND 0xCC000000
 void PIT_handle_pit(void) {}
@@ -10,4 +10,3 @@ void PIT_handle_pit(void) {}
 void PIT_set_state(char state) { outb(PIT_MODE_COMMAND, state); }
 //well this doesn't work
 void PIT_disable_pit(void) { outl(PIT_MODE_COMMAND, PIT_LATCH_COMMAND); }
-

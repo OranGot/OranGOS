@@ -1,8 +1,8 @@
-#include "../drivers/PS2f/ps2.h"
-#include "../util/dbg.h"
-#include "../util/printf.h"
-#include "exep.h"
-#include "pic/pic.h"
+#include "../../include/ps2.h"
+#include "../../include/dbg.h"
+#include "../../include/printf.h"
+#include "../../include/exep.h"
+#include "../../include/pic.h"
 #include <stdint.h>
 #define SYSCALL 0x80 - 32
 void interrupt_handler(IDT_push_reg *interrupt) {
@@ -13,7 +13,7 @@ void interrupt_handler(IDT_push_reg *interrupt) {
   }
   switch (interrupt->interrupt_num - 32) {
   case 1:
-    dbg_printf("PS2 handler activated\n");
+    //dbg_printf("PS2 handler activated\n");
     handle_ps2();
     break;
   case 0:

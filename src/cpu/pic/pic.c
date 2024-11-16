@@ -5,7 +5,7 @@
 #define PIC2_COMMAND PIC2
 #define PIC2_DATA (PIC2 + 1)
 #define PIC_EOI 0x20
-#include "../../util/pio.h"
+#include "../../include/pio.h"
 #include <stdint.h>
 void PIC_sendEOI(uint8_t irq) {
   if (irq >= 8)
@@ -29,8 +29,8 @@ void pic_disable(void) {
 #define ICW4_BUF_SLAVE 0x08  /* Buffered mode/slave */
 #define ICW4_BUF_MASTER 0x0C /* Buffered mode/master */
 #define ICW4_SFNM 0x10
-#include "../../util/dbg.h"
-#include "../../util/printf.h"
+#include "../../include/dbg.h"
+#include "../../include/printf.h"
 void PIC_remap(int offset1, int offset2) {
   uint8_t a1, a2;
   dbg_printf("remapping PIC\n");

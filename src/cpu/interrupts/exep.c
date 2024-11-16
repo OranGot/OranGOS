@@ -1,7 +1,7 @@
-#include "exep.h"
-#include "../tui/console.h"
-#include "../util/dbg.h"
-#include "../util/printf.h"
+#include "../../include/exep.h"
+#include "../../include/console.h"
+#include "../../include/dbg.h"
+#include "../../include/printf.h"
 #include <stdint.h>
 __attribute__((cdecl)) void exception_handler(IDT_push_reg *err) {
   clear_screen();

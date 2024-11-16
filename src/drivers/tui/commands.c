@@ -1,6 +1,7 @@
-#include "../util/printf.h"
-#include "../util/strutil.h"
-#include "console.h"
+#include "../../include/printf.h"
+#include "../../include/strutil.h"
+#include "../../include/pci.h"
+#include "../../include/console.h"
 #include <stdint.h>
 void run_command(char *cmd) {
   flip_console_mode();
@@ -11,7 +12,9 @@ void run_command(char *cmd) {
     // terminal_putentryat('>', 15 | (0 << 4), 0, 0);
     terminal_move(0, 0);
 
-  } else {
+  } else if(strcmp(cmd, ">lspci", 7) == 0){
+      lspci();
+  }else {
 
     printf("INVALID COMMAND: %s\n", cmd);
   }

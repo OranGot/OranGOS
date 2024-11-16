@@ -1,4 +1,4 @@
-#include "gdt.h"
+#include "../../include/gdt.h"
 extern void gdt_flush(void *addr_t);
 gdt_entry gdt_entry_inst[5];
 gdt_ptr gdt_ptr_inst;

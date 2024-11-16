@@ -32,14 +32,14 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // OranGOS implementation of _putchar
-#include "../tui/console.h"
+#include "../include/console.h"
 void _putchar(char character) { terminal_putchar(character); }
 // end
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "printf.h"
+#include "../include/printf.h"
 
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file

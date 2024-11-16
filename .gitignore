@@ -1,1 +1,6 @@
 .vscode
+tbin/*
+myos.bin
+isodir/boot/myos.bin
+myos.iso
+disk.img

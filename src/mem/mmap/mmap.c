@@ -4,11 +4,11 @@
  *
  *
  */
-#include "../KernelAllocator/alloc.h"
-#include "../PageTable/pagedir.h"
+#include "../../include/alloc.h"
+#include "../../include/pagedir.h"
 #include <stdint.h>
-#include "../../util/dbg.h"
-#include "../../util/kerninfo.h"
+#include "../../include/dbg.h"
+#include "../../include/kerninfo.h"
 // I don't know what write through means so I'll just set it
 #define DEFAULT_USER_FLAGS 0b000001111
 #define DEFAULT_KERNEL_FLAGS 0b100001111

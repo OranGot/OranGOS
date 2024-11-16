@@ -1,29 +1,34 @@
-#include "AHCI.h"
-#include "../PCI/pci.h"
-#include "../../util/dbg.h"
-#include "../../util/printf.h"
+#include "../../include/AHCI.h"
+#include "../../include/pci.h"
+#include "../../include/dbg.h"
+#include "../../include/printf.h"
+#include "../../include/alloc.h"
 #include <stdint.h>
+uint16_t ahci_bus, ahci_device;
 static uint8_t is_ahci(uint16_t bus, uint8_t device){
       uint16_t vendor, class, subclass;
     if ((vendor = pciConfigReadWord((uint8_t)bus, device, 0, 0)) == 0xFFFF) {
-      dbg_printf("device doesn't exist\n");
+      //dbg_printf("device doesn't exist\n");
       return 1;
     }
-    if((class = ((pciConfigReadWord((uint8_t)bus, device, 0, 6) & 0xFFFF0000) >> 16)) != 0x01){
+    if((class = (pciConfigReadWord((uint8_t)bus, device, 0, 0xa) & 0xFF00) >> 8) != 0x01){
       dbg_printf("not a storage device\n");
       return 2;
     }
-    if((subclass = (uint16_t)(pciConfigReadWord((uint8_t)bus, device, 0, 6) & 0xFFFF)) != 0x06){
+    if((subclass = (pciConfigReadWord((uint8_t)bus, device, 0, 0xa) & 0xFF)) != 0x06){
       dbg_printf("incorrect subclass\n");
       return 2;
     }
+    ahci_bus = bus;
+    ahci_device = device;
     dbg_printf("AHCI found\n");
     return 0;
 
 }
-uint16_t ahci_bus, ahci_device;
+HEADER_TYPE_0x0* AHCI_PCI_HEADER;
+
 HBA_MEM* ahci_mem_base;
-void find_ahci(void){
+int find_ahci(void){
   uint16_t bus, dev;
   uint8_t is_valid = 0;
   for(bus = 0; bus < 256;  bus++){
@@ -35,14 +40,22 @@ void find_ahci(void){
     }
   }
   if(!is_valid){
-    dbg_printf("No AHCI");
-    return;
+    return 1 ;
   }
   ahci_bus = bus;
   ahci_device = dev;
+  return 0;
 }
 void setup_ahci(void){
-  ahci_mem_base = (HBA_MEM*)((uint32_t)pciConfigReadWord(ahci_bus, ahci_device, 0, 17) | (uint32_t)pciConfigReadWord(ahci_bus, ahci_device, 0, 18)); //bar5
+   HEADER_TYPE_0x0* ahci_config =  kalloc(sizeof(AHCI_PCI_HEADER));
+   if(ahci_config == NULL){
+       dbg_printf("kalloc failed\n");
+   }
+  get_pci_normal_device(ahci_config, ahci_bus, ahci_device, 0);
+  printf("AHCI PCI HEADER: %p\n", ahci_config);
+  print_device_normal(ahci_config);
+  ahci_mem_base = (volatile HBA_MEM*)ahci_config->BAR5;
+  probe_port();
 }
 #define	SATA_SIG_ATA	0x00000101	// SATA drive
 #define	SATA_SIG_ATAPI	0xEB140101	// SATAPI drive
@@ -76,16 +89,19 @@ static AHCI_DEV_T check_type(HBA_PORT *port)
 	}
 }
 
-void probe_port(HBA_MEM *abar)
+void probe_port()
 {
 	// Search disk in implemented ports
-	uint32_t pi = abar->pi;
+	uint32_t pi = ahci_mem_base->pi;
 	int i = 0;
+	printf("pi: %x\n", pi);
 	while (i<32)
 	{
 		if (pi & 1)
 		{
-			int dt = check_type(&abar->ports[i]);
+		    // printf(" %i ", i);
+			int dt = check_type(&ahci_mem_base->ports[i]);
+			//printf("dt: %i ", dt);
 			if (dt == AHCI_DEV_SATA)
 			{
 				printf("SATA drive found at port %d\n", i);
@@ -104,7 +120,8 @@ void probe_port(HBA_MEM *abar)
 			}
 			else
 			{
-				printf("No drive found at port %d\n", i);
+				//printf("No drive found at port %d\n", i);
+				dbg_printf("no drive\n");
 			}
 		}
 
@@ -149,4 +166,7 @@ void stop_cmd(HBA_PORT *port)
 		break;
 	}
 
+}
+void print_dbg_ahci(void){
+    printf("AHCI MEM BASE AT: %p", ahci_mem_base);
 }

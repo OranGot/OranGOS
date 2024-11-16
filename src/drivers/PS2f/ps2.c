@@ -1,6 +1,6 @@
-#include "../../util/dbg.h"
-#include "../../util/pio.h"
-#include "../../util/printf.h"
+#include "../../include/dbg.h"
+#include "../../include/pio.h"
+#include "../../include/printf.h"
 #include <stdbool.h>
 #include <stdint.h>
 bool is_caps = false, is_lshift = false, is_rshift = false, is_ctrl = false;

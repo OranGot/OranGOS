@@ -281,3 +281,7 @@ typedef enum{
     AHCI_DEV_PM = 3, //port multiplier
     AHCI_DEV_SATAPI = 4,
 }AHCI_DEV_T;
+void setup_ahci(void);
+int find_ahci(void);
+void probe_port();
+void print_dbg_ahci();

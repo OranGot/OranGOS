@@ -1,11 +1,11 @@
-#include "alloc.h"
-#include "../../util/dbg.h"
-#include "../../util/multiboot_header.h"
-#include "../../util/num.h"
-#include "../../util/printf.h"
-#include "../../util/strutil.h"
-#include "../PageTable/pagedir.h"
-#include "../mmap/mmap.h"
+#include "../../include/alloc.h"
+#include "../../include/dbg.h"
+#include "../../include/multiboot_header.h"
+#include "../../include/num.h"
+#include "../../include/printf.h"
+#include "../../include/strutil.h"
+#include "../../include/pagedir.h"
+#include "../../include/mmap.h"
 #include <stdint.h>
 
 #define CWPAGE_DEFAULT (void*)0xDEADBEEF
@@ -81,6 +81,7 @@ int load_page(void *baseaddr) {
   cwpage = baseaddr;
   return 0;
 }
+extern uint32_t endkernel;
 void save_page(void *baseaddr) {}
 void *kalloc(uint32_t size) {
   if (cwpage == CWPAGE_DEFAULT) {

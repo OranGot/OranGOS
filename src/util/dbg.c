@@ -1,5 +1,5 @@
-#include "pio.h"
-#include "printf.h"
+#include "../include/pio.h"
+#include "../include/printf.h"
 #include <stdarg.h>
 #define DEBUG_PORT 0xE9
 void dbg_putchar(char character, void *arg) { outb(DEBUG_PORT, character); }

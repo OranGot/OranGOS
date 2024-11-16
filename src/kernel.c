@@ -1,23 +1,25 @@
-#include "Memory/KernelAllocator/alloc.h"
-#include "Memory/PageTable/pagedir.h"
-#include "Memory/mmap/mmap.h"
-#include "drivers/ACPI/rsdp.h"
-#include "drivers/PIT/pit.h"
-#include "drivers/PS2f/ps2.h"
-#include "gdt/gdt.h"
-#include "interrupts/int.h"
-#include "interrupts/pic/pic.h"
-#include "tests/test.h"
-#include "tui/console.h"
-#include "tui/cursor.h"
-#include "util/dbg.h"
-#include "util/multiboot_header.h"
-#include "util/printf.h"
+#include "include/alloc.h"
+#include "include/pagedir.h"
+#include "include/mmap.h"
+#include "include/rsdp.h"
+#include "include/pit.h"
+#include "include/ps2.h"
+#include "include/pci.h"
+#include "include/AHCI.h"
+#include "include/gdt.h"
+#include "include/int.h"
+#include "include/pic.h"
+#include "include/test.h"
+#include "include/console.h"
+#include "include/cursor.h"
+#include "include/dbg.h"
+#include "include/multiboot_header.h"
+#include "include/printf.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 // typedef uint16_t grub_uint16_t;
-#include "util/kerninfo.h"
+#include "include/kerninfo.h"
 
 void kernel_main(multiboot_info_t *mbd, uint32_t magic) {
   if (MULTIBOOT_BOOTLOADER_MAGIC != magic) {
@@ -34,7 +36,7 @@ void kernel_main(multiboot_info_t *mbd, uint32_t magic) {
   dbg_printf("terminal initialised\n");
   enable_cursor(0, 13);
   flip_console_mode();
-  printmem(mbd);
+
   printf("  ___                   ____  ___  ____\n");
   printf(" / _ \\ _ __ __ _ _ __  / ___|/ _ \\/ ___| \n");
   printf("| | | | '__/ _` | '_ \\| |  _| | | \\___ \\\n");
@@ -48,13 +50,14 @@ void kernel_main(multiboot_info_t *mbd, uint32_t magic) {
   dbg_printf("PIC remapped\n");
   paging_setup();
   dbg_printf("paging setup\n");
-  remap_kernel();
-  dbg_printf("kernel remapped to higher half\n");
+  // remap_kernel();
+  // dbg_printf("kernel remapped to higher half\n");
   kernel_allocator_setup(mbd);
   dbg_printf("kernel allocator setup\n");
   init_ps2();
-  dbg_printf("initialised ps2\n");
 
+  dbg_printf("initialised ps2\n");
+  printmem(mbd);
 
   // if (test_allocator() == 1) {
   //   printf("ALLOCATOR tests\n");
@@ -64,10 +67,19 @@ void kernel_main(multiboot_info_t *mbd, uint32_t magic) {
   //}
   RSDP rsdp = locate_rsdp();
   printf("ACPI revision: %i\n", rsdp.Revision);
+  if(find_ahci() == 1){
+      printf("no AHCI found\n");
+  }
+  else{
+      setup_ahci();
+      //print_dbg_ahci();
+      printf("AHCI setup\n");
+  }
 
   printf("Welcome to OranGOS version %s!\n", RELEASE);
   _putchar('>');
   flip_console_mode();
+
   for (;;)
     ;
 }

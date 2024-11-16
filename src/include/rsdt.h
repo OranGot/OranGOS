@@ -10,7 +10,7 @@ struct ACPISDTHeader {
   uint32_t CreatorID;
   uint32_t CreatorRevision;
 };
-struct RSDT {
-  struct ACPISDTHeader h;
-  uint32_t PointerToOtherSDT[(h.Length - sizeof(h)) / 4];
-};
+// struct RSDT {
+//   struct ACPISDTHeader h;
+//   uint32_t PointerToOtherSDT[(h.Length - sizeof(h)) / 4];
+// };

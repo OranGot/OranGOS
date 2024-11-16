@@ -1,6 +1,6 @@
 #pragma once
-#include "../../util/multiboot_header.h"
-#include "../PageTable/pagedir.h"
+#include "multiboot_header.h"
+#include "pagedir.h"
 #include <stdint.h>
 #define BITMAP_BYTES (PAGE_SIZE / 8)
 #define KALLOCATOR_SIGNATURE 0xFA

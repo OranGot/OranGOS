@@ -1,5 +1,5 @@
-#include "ide.h"
-#include "../../util/pio.h"
+#include "../../include/ide.h"
+#include "../../include/pio.h"
 #include <stdint.h>
 struct IDEChannelRegisters {
    unsigned short base;  // I/O Base.

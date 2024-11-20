@@ -3,6 +3,9 @@
 #include "../../include/dbg.h"
 #include "../../include/printf.h"
 #include <stdint.h>
+extern char _start;
+extern uint32_t startkernel;
+extern uint32_t endkernel;
 __attribute__((cdecl)) void exception_handler(IDT_push_reg *err) {
   clear_screen();
   printf("EXCEPTION!!!\nError code: %08x, Code seg: %u,Data seg: %u\nEAX: "
@@ -56,6 +59,10 @@ __attribute__((cdecl)) void exception_handler(IDT_push_reg *err) {
     break;
   case 14:
     dbg_printf("Page fault\n");
+    uint32_t cr2;
+        __asm__ __volatile__("mov %%cr2, %0" : "=r"(cr2));
+        printf("at virtual adress: 0x%x\n", cr2);
+        printf("kernel starts at: 0x%p\nkernel ends at 0x%p\n", &startkernel, &endkernel);
     break;
   case 15:
     dbg_printf("HOW!!!!!!!!!\n");

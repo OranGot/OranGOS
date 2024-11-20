@@ -3,6 +3,7 @@
 #include "../../include/dbg.h"
 #include "../../include/printf.h"
 #include "../../include/alloc.h"
+#include "../../include/mmap.h"
 #include <stdint.h>
 uint16_t ahci_bus, ahci_device;
 static uint8_t is_ahci(uint16_t bus, uint8_t device){
@@ -35,6 +36,8 @@ int find_ahci(void){
     for(dev = 0; dev< 32; dev++){
       if(is_ahci(bus, dev) == 0) {
         is_valid = 1;
+        ahci_bus = bus;
+        ahci_device = dev;
         break;
       }
     }
@@ -42,20 +45,28 @@ int find_ahci(void){
   if(!is_valid){
     return 1 ;
   }
-  ahci_bus = bus;
-  ahci_device = dev;
+
   return 0;
 }
+extern uint32_t kernel_page_directory[PAGE_TABLE_SIZE] __attribute__((aligned(4096)));
+
 void setup_ahci(void){
-   HEADER_TYPE_0x0* ahci_config =  kalloc(sizeof(AHCI_PCI_HEADER));
+    dbg_printf("setting up AHCI\n");
+   HEADER_TYPE_0x0* ahci_config = kalloc(sizeof(AHCI_PCI_HEADER));
    if(ahci_config == NULL){
        dbg_printf("kalloc failed\n");
    }
+   printf("AHCI BUS: 0x%x, AHCI DEVICE: 0x%x\n", ahci_bus, ahci_device);
+   dbg_printf("allocation done\n");
   get_pci_normal_device(ahci_config, ahci_bus, ahci_device, 0);
+  dbg_printf("got device info\n");
   printf("AHCI PCI HEADER: %p\n", ahci_config);
   print_device_normal(ahci_config);
-  ahci_mem_base = (volatile HBA_MEM*)ahci_config->BAR5;
+  dbg_printf("printed device\n");
+  //ahci_mem_base = (volatile HBA_MEM*)ahci_config->BAR5;
+  ahci_mem_base = append_page_at_addr(ahci_config->BAR5, 0b1011, kernel_page_directory);
   probe_port();
+  dbg_printf("AHCI initialised\n");
 }
 #define	SATA_SIG_ATA	0x00000101	// SATA drive
 #define	SATA_SIG_ATAPI	0xEB140101	// SATAPI drive
@@ -168,5 +179,5 @@ void stop_cmd(HBA_PORT *port)
 
 }
 void print_dbg_ahci(void){
-    printf("AHCI MEM BASE AT: %p", ahci_mem_base);
+    printf("AHCI MEM BASE AT: 0x%p\n", ahci_mem_base);
 }

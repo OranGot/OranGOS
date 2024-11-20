@@ -1,9 +1,11 @@
 #include "../../include/strutil.h"
 #include "../../include/commands.h"
 #include "../../include/cursor.h"
+#include "../../include/dbg.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+void terminal_putentryat(char c, uint8_t color, uint16_t x, uint16_t y);
 enum vga_color {
   VGA_COLOR_BLACK = 0,
   VGA_COLOR_BLUE = 1,
@@ -59,6 +61,10 @@ void clear_screen(void) {
       terminal_buffer[index] = vga_entry('\0', terminal_color);
     }
   }
+  move_cursor(0, 0);
+  terminal_row = 0;
+  terminal_column = 0;
+  return;
 }
 void terminal_move(uint16_t y, uint16_t x) {
   terminal_column = x;
@@ -88,6 +94,16 @@ void terminal_putchar(char c) {
       terminal_column = 0;
       terminal_row++;
     }
+    // if(terminal_row >= VGA_HEIGHT-1){
+    //     dbg_printf("shift needed\n");
+    //     for(uint16_t i = 0; i< VGA_WIDTH * (VGA_HEIGHT-1); i++){
+    //             terminal_buffer[i] = terminal_buffer[i+VGA_WIDTH];
+    //     }
+    //     for(uint8_t i = 0; i< VGA_WIDTH; i++){
+    //         terminal_buffer[i+ VGA_WIDTH * (VGA_HEIGHT-1)] = '\0';
+    //     }
+    //     return;
+    //       }
     return;
   case '\t':
     for (uint8_t i = 0; i < SPACES_PER_TAB; i++) {

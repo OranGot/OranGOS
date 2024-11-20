@@ -20,6 +20,8 @@
 #include <stdint.h>
 // typedef uint16_t grub_uint16_t;
 #include "include/kerninfo.h"
+extern uint32_t startkernel;
+extern uint32_t endkernel;
 
 void kernel_main(multiboot_info_t *mbd, uint32_t magic) {
   if (MULTIBOOT_BOOTLOADER_MAGIC != magic) {
@@ -50,32 +52,39 @@ void kernel_main(multiboot_info_t *mbd, uint32_t magic) {
   dbg_printf("PIC remapped\n");
   paging_setup();
   dbg_printf("paging setup\n");
+  setup_pageframe_allocator(mbd);
+  dbg_printf("pageframe allocator setup");
   // remap_kernel();
   // dbg_printf("kernel remapped to higher half\n");
-  kernel_allocator_setup(mbd);
+  //kernel_allocator_setup(mbd);
   dbg_printf("kernel allocator setup\n");
   init_ps2();
-
   dbg_printf("initialised ps2\n");
-  printmem(mbd);
-
+  //printmem(mbd);
+  printf("kernel starts at: 0x%p\nkernel ends at 0x%p\n", &startkernel, &endkernel);
   // if (test_allocator() == 1) {
-  //   printf("ALLOCATOR tests\n");
+  //   dbg_printf("ALLOCATOR tests failed\n");
   // }
   // else{
   //     printf("Allocator tests passed\n");
-  //}
+  // }
   RSDP rsdp = locate_rsdp();
   printf("ACPI revision: %i\n", rsdp.Revision);
+  clear_screen();
   if(find_ahci() == 1){
       printf("no AHCI found\n");
   }
   else{
+      dbg_printf("ahci is present\n");
       setup_ahci();
-      //print_dbg_ahci();
+      //clear_screen();
+      print_dbg_ahci();
+      //probe_port();
       printf("AHCI setup\n");
-  }
+      dbg_printf("AHCI fully setup\n");
 
+  }
+  dbg_printf("kernel initialised\n");
   printf("Welcome to OranGOS version %s!\n", RELEASE);
   _putchar('>');
   flip_console_mode();

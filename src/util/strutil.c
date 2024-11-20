@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 uint64_t strlen(const char *str) {
 
   uint64_t len = 0;
@@ -26,4 +27,44 @@ void *memcpy(void *dest, const void *src, size_t n) {
   }
 
   return dest;
+}
+void *memset(void *s, int c, size_t n) {
+  uint8_t *p = (uint8_t *)s;
+
+  for (size_t i = 0; i < n; i++) {
+    p[i] = (uint8_t)c;
+  }
+
+  return s;
+}
+int strshft(char* buf, int sc, uint32_t len){
+    for(uint16_t bfctr = len; bfctr> 0; bfctr++){
+        if(bfctr+sc > len){
+            if(sc > 0){
+                continue;
+            }
+            else if(sc < 0){
+                buf[bfctr] = '\0';
+            }
+            else{
+                return 1;
+            }
+        }
+        else if(bfctr + sc < 0){
+            if(sc > 0){
+                buf[bfctr] = '\0';
+            }
+            else if(sc < 0){
+                continue;
+            }
+            else{
+                return 1;
+            }
+        }
+        else{
+            buf[bfctr] = buf[bfctr + sc];
+        }
+
+    }
+    return 0;
 }

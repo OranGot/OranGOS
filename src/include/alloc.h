@@ -4,11 +4,13 @@
 #include <stdint.h>
 #define BITMAP_BYTES (PAGE_SIZE / 8)
 #define KALLOCATOR_SIGNATURE 0xFA
+
 typedef struct {
   // i thought it would be funny to add a signature
   uint8_t signature;
   uint8_t bitmap[BITMAP_BYTES];
 } __attribute__((packed)) bitmap_header;
+void* append_page_at_addr(uint32_t phyaddr, uint16_t flags, uint32_t* pagedir);
 void *create_virtual_address(uint16_t page_dir_entry, uint16_t page_table_entry,
                              uint16_t address_into_page);
 uint32_t create_page_table_entry(uint32_t address, uint16_t flags);

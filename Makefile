@@ -1,7 +1,7 @@
 LINK_FILES = tbin/kernel.o tbin/console.o tbin/boot.o tbin/strutil.o tbin/cursor.o\
 tbin/gdt.o tbin/gdta.o tbin/exepa.o tbin/exep.o tbin/idt.o tbin/int.o tbin/pic.o tbin/printf.o\
 tbin/ps2.o tbin/dbg.o tbin/pit.o tbin/commands.o tbin/pagetable.o tbin/paginginit.o \
-tbin/rsdp.o tbin/mmap.o tbin/alloc.o tbin/test.o tbin/panic.o tbin/AHCI.o tbin/pci.o
+tbin/rsdp.o tbin/alloc.o tbin/test.o tbin/panic.o tbin/AHCI.o tbin/pci.o tbin/pageframe.o
 
 C_FLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra
 C_DBG_FLAGS = -std=gnu99 -ffreestanding -O2 -Wall -Wextra
@@ -35,6 +35,7 @@ build:
 	i686-elf-gcc -c src/tests/test.c -o tbin/test.o $(C_FLAGS)
 	i686-elf-gcc -c src/drivers/AHCI/AHCI.c -o tbin/AHCI.o $(C_FLAGS)
 	i686-elf-gcc -c src/drivers/PCI/pci.c -o tbin/pci.o $(C_FLAGS)
+	i686-elf-gcc -c src/mem/pageframe/pageframe.c -o tbin/pageframe.o $(C_FLAGS)
 
 	i686-elf-gcc -T linker.ld -o myos.bin $(LINK_FLAGS) $(LINK_FILES) -lgcc #-I ~/grub
 	cp myos.bin isodir/boot/myos.bin
@@ -71,4 +72,4 @@ disk:
 	-sudo losetup -d /dev/loop102 || true
 	make run
 run:
-	qemu-system-i386 -drive id=disk,file=disk.img,if=none -debugcon stdio -device ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0 -m 4G \
+	qemu-system-i386 -drive id=disk,file=disk.img,if=none -debugcon stdio -device ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0 -m 2G \
